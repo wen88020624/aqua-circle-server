@@ -24,6 +24,8 @@ services:
 
   # NestJS 應用程式服務
   app:
+    profiles:
+      - app
     build:
       context: .
       dockerfile: Dockerfile
