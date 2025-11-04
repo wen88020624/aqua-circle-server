@@ -1,0 +1,128 @@
+Table Aquarium {
+  id int [primary key]
+  name string [note: '魚缸的名稱']
+  length float [note: '魚缸的長度（單位：公分）']
+  width float [note: '魚缸的寬度（單位：公分）']
+  height float [note: '魚缸的高度（單位：公分）']
+  status string [note: '魚缸的狀態']
+  setup_date string [note: '魚缸開始使用的日期']
+  notes string [note: '魚缸的備註說明']
+  
+  Note: '魚缸是系統中的主要容器'
+}
+
+Table Equipment {
+  id int [primary key]
+  name string [note: '設備的名稱']
+  tag string [note: '設備的標籤']
+  purchase_date string [note: '設備的購買日期']
+  amount float [note: '設備的購買金額']
+  status string [note: '設備的狀態']
+  notes string [note: '設備的備註說明']
+  aquarium_id int [note: '設備所屬的魚缸']
+  
+  Note: '設備是魚缸使用的器材'
+}
+
+Table Fish {
+  id int [primary key]
+  name string [note: '魚隻的名稱']
+  tag string [note: '魚隻的標籤']
+  purchase_date string [note: '魚隻的購買日期']
+  amount float [note: '魚隻的購買金額']
+  status string [note: '魚隻的狀態']
+  notes string [note: '魚隻的備註說明']
+  aquarium_id int [note: '魚隻所屬的魚缸']
+  
+  Note: '魚隻是養殖在魚缸中的生物'
+}
+
+Table WaterChange {
+  id int [primary key]
+  date string [note: '換水的日期']
+  water_volume float [note: '換水的量']
+  aquarium_id int [note: '換水記錄所屬的魚缸']
+  notes string [note: '換水記錄的備註說明']
+  
+  Note: '換水記錄是魚缸的維護記錄'
+}
+
+Table FilterMedia {
+  id int [primary key]
+  operation_type string [note: '濾材的操作類型（清洗或更換）']
+  date string [note: '操作的日期']
+  aquarium_id int [note: '濾材記錄所屬的魚缸']
+  notes string [note: '濾材記錄的備註說明']
+  
+  Note: '濾材記錄是魚缸濾材的維護記錄'
+}
+
+Table Feed {
+  id int [primary key]
+  name string [note: '飼料的名稱']
+  tag string [note: '飼料的標籤']
+  purchase_date string [note: '飼料的購買日期']
+  expiry_date string [note: '飼料的過期日期']
+  amount float [note: '飼料的購買金額']
+  status string [note: '飼料的狀態']
+  notes string [note: '飼料的備註說明']
+  
+  Note: '飼料是魚隻的餵食物品'
+}
+
+Table FeedingRecord {
+  id int [primary key]
+  date string [note: '餵食的日期']
+  aquarium_id int [note: '餵食記錄所屬的魚缸']
+  feed_id int [note: '餵食使用的飼料']
+  notes string [note: '餵食記錄的備註說明']
+  
+  Note: '餵食記錄是魚缸的餵食記錄'
+}
+
+Table Medicine {
+  id int [primary key]
+  name string [note: '藥品的名稱']
+  tag string [note: '藥品的標籤']
+  purchase_date string [note: '藥品的購買日期']
+  expiry_date string [note: '藥品的到期日期']
+  amount float [note: '藥品的購買金額']
+  notes string [note: '藥品的備註說明']
+  
+  Note: '藥品是魚缸使用的藥品'
+}
+
+Table MedicationRecord {
+  id int [primary key]
+  medication_name string [note: '下藥的名稱']
+  tag string [note: '下藥記錄的標籤']
+  dosage string [note: '下藥的用量']
+  date string [note: '下藥的日期']
+  aquarium_id int [note: '下藥記錄所屬的魚缸']
+  medicine_id int [note: '下藥使用的藥品']
+  notes string [note: '下藥記錄的備註說明']
+  
+  Note: '下藥記錄是魚缸的用藥記錄'
+}
+
+Table WaterQualityRecord {
+  id int [primary key]
+  test_type string [note: '檢測的種類（NH3+NH4、PH、NO3、NO2）']
+  test_date string [note: '檢測的日期']
+  value float [note: '檢測的數值']
+  aquarium_id int [note: '水質檢測記錄所屬的魚缸']
+  notes string [note: '水質檢測記錄的備註說明']
+  
+  Note: '水質檢測記錄是魚缸的水質檢測記錄'
+}
+
+// Relationships
+Ref: Equipment.aquarium_id > Aquarium.id
+Ref: Fish.aquarium_id > Aquarium.id
+Ref: WaterChange.aquarium_id > Aquarium.id
+Ref: FilterMedia.aquarium_id > Aquarium.id
+Ref: FeedingRecord.aquarium_id > Aquarium.id
+Ref: FeedingRecord.feed_id > Feed.id
+Ref: MedicationRecord.aquarium_id > Aquarium.id
+Ref: MedicationRecord.medicine_id > Medicine.id
+Ref: WaterQualityRecord.aquarium_id > Aquarium.id
