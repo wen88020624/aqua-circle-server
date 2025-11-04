@@ -24,3 +24,10 @@ ERM：指出 Aquarium 實體的 length、width、height 屬性缺乏邊界條件
 
 High
 - High：阻礙核心功能定義或資料建模
+
+---
+# 解決記錄
+
+- **回答**：D - 長寬須大於等於 10，高須大於等於 5，最大 2000 公分
+- **更新的規格檔**：spec/erm.dbml
+- **變更內容**：在 Aquarium 實體的 length、width、height 屬性 note 中新增數值範圍限制

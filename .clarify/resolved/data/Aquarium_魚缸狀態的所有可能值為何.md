@@ -24,3 +24,10 @@ ERM：指出 Aquarium 實體的 status 屬性定義不完整
 
 High
 - High：阻礙核心功能定義或資料建模
+
+---
+# 解決記錄
+
+- **回答**：D - 開缸、穩定、問題、關缸
+- **更新的規格檔**：spec/erm.dbml
+- **變更內容**：在 Aquarium 實體的 status 屬性 note 中新增狀態值定義
