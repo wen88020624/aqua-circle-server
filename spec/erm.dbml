@@ -4,7 +4,7 @@ Table Aquarium {
   length float [note: '魚缸的長度（單位：公分），須 >= 10，最大 2000']
   width float [note: '魚缸的寬度（單位：公分），須 >= 10，最大 2000']
   height float [note: '魚缸的高度（單位：公分），須 >= 5，最大 2000']
-  status string [note: '魚缸的狀態（開缸、穩定、問題、關缸）']
+  status string [note: '魚缸的狀態（開缸、穩定、治療、閒置）']
   setup_date string [note: '魚缸開始使用的日期']
   notes string [note: '魚缸的備註說明']
   
@@ -17,24 +17,25 @@ Table Equipment {
   tag string [note: '設備的標籤']
   purchase_date string [note: '設備的購買日期']
   amount float [note: '設備的購買金額，必須 >= 0']
-  status string [note: '設備的狀態（運作中、閒置、檢修、汰換）']
+  status string [note: '設備的狀態（使用中、閒置、賣掉、丟棄）']
   notes string [note: '設備的備註說明']
   aquarium_id int [note: '設備所屬的魚缸']
   
   Note: '設備是魚缸使用的器材'
 }
 
-Table Fish {
+Table Creature {
   id int [primary key]
-  name string [note: '魚隻的名稱']
-  tag string [note: '魚隻的標籤']
-  purchase_date string [note: '魚隻的購買日期']
-  amount float [note: '魚隻的購買金額，必須 >= 0']
-  status string [note: '魚隻的狀態（健康、生病、死亡、隔離）']
-  notes string [note: '魚隻的備註說明']
-  aquarium_id int [note: '魚隻所屬的魚缸']
+  name string [note: '生物的名稱']
+  tag string [note: '生物的標籤']
+  purchase_date string [note: '生物的購買日期']
+  amount float [note: '生物的購買金額，必須 >= 0']
+  status string [note: '生物的狀態（健康、生病、死亡、隔離）']
+  health_condition string [note: '生物的健康程度（過胖、過瘦、正常、生病、精神異常、死亡）']
+  notes string [note: '生物的備註說明']
+  aquarium_id int [note: '生物所屬的魚缸']
   
-  Note: '魚隻是養殖在魚缸中的生物'
+  Note: '生物是養殖在魚缸中的生物'
 }
 
 Table WaterChange {
@@ -67,7 +68,7 @@ Table Feed {
   status string [note: '飼料的狀態']
   notes string [note: '飼料的備註說明']
   
-  Note: '飼料是魚隻的餵食物品'
+  Note: '飼料是生物的餵食物品'
 }
 
 Table FeedingRecord {
@@ -118,7 +119,7 @@ Table WaterQualityRecord {
 
 // Relationships
 Ref: Equipment.aquarium_id > Aquarium.id
-Ref: Fish.aquarium_id > Aquarium.id
+Ref: Creature.aquarium_id > Aquarium.id
 Ref: WaterChange.aquarium_id > Aquarium.id
 Ref: FilterMedia.aquarium_id > Aquarium.id
 Ref: FeedingRecord.aquarium_id > Aquarium.id
