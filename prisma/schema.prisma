@@ -21,3 +21,19 @@ model User {
   @@map("users")
 }
 
+model Aquarium {
+  id        Int      @id @default(autoincrement())
+  name      String
+  length    Float    // 魚缸的長度（單位：公分），須 >= 10，最大 2000
+  width     Float    // 魚缸的寬度（單位：公分），須 >= 10，最大 2000
+  height    Float    // 魚缸的高度（單位：公分），須 >= 5，最大 2000
+  status    String   // 魚缸的狀態（開缸、穩定、治療、閒置）
+  setupDate String   @map("setup_date") // 魚缸開始使用的日期（格式：YYYY-MM-DD，如 2025-01-01）
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("aquariums")
+}
+
