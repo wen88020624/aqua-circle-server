@@ -5,7 +5,7 @@ Table Aquarium {
   width float [note: '魚缸的寬度（單位：公分），須 >= 10，最大 2000']
   height float [note: '魚缸的高度（單位：公分），須 >= 5，最大 2000']
   status string [note: '魚缸的狀態（開缸、穩定、治療、閒置）']
-  setup_date string [note: '魚缸開始使用的日期']
+  setup_date string [note: '魚缸開始使用的日期（格式：YYYY-MM-DD，如 2025-01-01）']
   notes string [note: '魚缸的備註說明']
   
   Note: '魚缸是系統中的主要容器'
@@ -15,7 +15,7 @@ Table Equipment {
   id int [primary key]
   name string [note: '設備的名稱']
   tag string [note: '設備的標籤']
-  purchase_date string [note: '設備的購買日期']
+  purchase_date string [note: '設備的購買日期（格式：YYYY-MM-DD，如 2025-01-01）']
   amount float [note: '設備的購買金額，必須 >= 0']
   status string [note: '設備的狀態（使用中、閒置、賣掉、丟棄）']
   notes string [note: '設備的備註說明']
@@ -28,7 +28,7 @@ Table Creature {
   id int [primary key]
   name string [note: '生物的名稱']
   tag string [note: '生物的標籤']
-  purchase_date string [note: '生物的購買日期']
+  purchase_date string [note: '生物的購買日期（格式：YYYY-MM-DD，如 2025-01-01）']
   amount float [note: '生物的購買金額，必須 >= 0']
   status string [note: '生物的狀態（健康、生病、死亡、隔離）']
   health_condition string [note: '生物的健康程度（過胖、過瘦、正常、生病、精神異常、死亡）']
@@ -40,8 +40,8 @@ Table Creature {
 
 Table WaterChange {
   id int [primary key]
-  date string [note: '換水的日期']
-  water_volume float [note: '換水的量']
+  date string [note: '換水的日期（格式：YYYY-MM-DD，如 2025-01-01）']
+  water_volume float [note: '換水的比例（0.5 表示 1/2、0.33 表示 1/3、1.0 表示全換），必須 > 0 且 <= 1']
   aquarium_id int [note: '換水記錄所屬的魚缸']
   notes string [note: '換水記錄的備註說明']
   
@@ -51,7 +51,7 @@ Table WaterChange {
 Table FilterMedia {
   id int [primary key]
   operation_type string [note: '濾材的操作類型（清洗或更換）']
-  date string [note: '操作的日期']
+  date string [note: '操作的日期（格式：YYYY-MM-DD，如 2025-01-01）']
   aquarium_id int [note: '濾材記錄所屬的魚缸']
   notes string [note: '濾材記錄的備註說明']
   
@@ -62,8 +62,8 @@ Table Feed {
   id int [primary key]
   name string [note: '飼料的名稱']
   tag string [note: '飼料的標籤']
-  purchase_date string [note: '飼料的購買日期']
-  expiry_date string [note: '飼料的過期日期']
+  purchase_date string [note: '飼料的購買日期（格式：YYYY-MM-DD，如 2025-01-01）']
+  expiry_date string [note: '飼料的過期日期（格式：YYYY-MM-DD，如 2025-01-01）']
   amount float [note: '飼料的購買金額，必須 >= 0']
   status string [note: '飼料的狀態']
   notes string [note: '飼料的備註說明']
@@ -73,7 +73,7 @@ Table Feed {
 
 Table FeedingRecord {
   id int [primary key]
-  date string [note: '餵食的日期']
+  date string [note: '餵食的日期（格式：YYYY-MM-DD，如 2025-01-01）']
   aquarium_id int [note: '餵食記錄所屬的魚缸']
   feed_id int [note: '餵食使用的飼料']
   notes string [note: '餵食記錄的備註說明']
@@ -85,8 +85,8 @@ Table Medicine {
   id int [primary key]
   name string [note: '藥品的名稱']
   tag string [note: '藥品的標籤']
-  purchase_date string [note: '藥品的購買日期']
-  expiry_date string [note: '藥品的到期日期']
+  purchase_date string [note: '藥品的購買日期（格式：YYYY-MM-DD，如 2025-01-01）']
+  expiry_date string [note: '藥品的到期日期（格式：YYYY-MM-DD，如 2025-01-01）']
   amount float [note: '藥品的購買金額，必須 >= 0']
   notes string [note: '藥品的備註說明']
   
@@ -98,7 +98,7 @@ Table MedicationRecord {
   medication_name string [note: '下藥的名稱']
   tag string [note: '下藥記錄的標籤']
   dosage string [note: '下藥的用量']
-  date string [note: '下藥的日期']
+  date string [note: '下藥的日期（格式：YYYY-MM-DD，如 2025-01-01）']
   aquarium_id int [note: '下藥記錄所屬的魚缸']
   medicine_id int [note: '下藥使用的藥品']
   notes string [note: '下藥記錄的備註說明']
@@ -109,7 +109,7 @@ Table MedicationRecord {
 Table WaterQualityRecord {
   id int [primary key]
   test_type string [note: '檢測的種類（NH3+NH4、PH、NO3、NO2）']
-  test_date string [note: '檢測的日期']
+  test_date string [note: '檢測的日期（格式：YYYY-MM-DD，如 2025-01-01）']
   value float [note: '檢測的數值']
   aquarium_id int [note: '水質檢測記錄所屬的魚缸']
   notes string [note: '水質檢測記錄的備註說明']
