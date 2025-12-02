@@ -5,6 +5,12 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   
+  // 啟用 CORS
+  app.enableCors({
+    origin: true, // 允許所有來源（開發環境）
+    credentials: true,
+  });
+  
   // Swagger 配置
   const config = new DocumentBuilder()
     .setTitle('AquaCircle API')
