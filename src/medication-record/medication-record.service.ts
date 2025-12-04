@@ -8,7 +8,7 @@ export class MedicationRecordService {
 
   async create(createMedicationRecordDto: CreateMedicationRecordDto) {
     // 驗證下藥名稱不可為空
-    if (!createMedicationRecordDto.name || createMedicationRecordDto.name.trim() === '') {
+    if (!createMedicationRecordDto.medicationName || createMedicationRecordDto.medicationName.trim() === '') {
       throw new BadRequestException('下藥記錄的下藥名稱不可為空');
     }
 
@@ -38,7 +38,7 @@ export class MedicationRecordService {
 
     return this.prisma.medicationRecord.create({
       data: {
-        name: createMedicationRecordDto.name,
+        name: createMedicationRecordDto.medicationName,
         tag: createMedicationRecordDto.tag,
         dosage: createMedicationRecordDto.dosage,
         date: createMedicationRecordDto.date,
@@ -66,7 +66,7 @@ export class MedicationRecordService {
     }
 
     // 驗證下藥名稱不可為空（如果提供）
-    if (updateMedicationRecordDto.name !== undefined && updateMedicationRecordDto.name.trim() === '') {
+    if (updateMedicationRecordDto.medicationName !== undefined && updateMedicationRecordDto.medicationName.trim() === '') {
       throw new BadRequestException('下藥記錄的下藥名稱不可為空');
     }
 
@@ -91,16 +91,29 @@ export class MedicationRecordService {
       }
     }
 
+    const updateData: any = {};
+    if (updateMedicationRecordDto.medicationName !== undefined) {
+      updateData.name = updateMedicationRecordDto.medicationName;
+    }
+    if (updateMedicationRecordDto.tag !== undefined) {
+      updateData.tag = updateMedicationRecordDto.tag;
+    }
+    if (updateMedicationRecordDto.dosage !== undefined) {
+      updateData.dosage = updateMedicationRecordDto.dosage;
+    }
+    if (updateMedicationRecordDto.date !== undefined) {
+      updateData.date = updateMedicationRecordDto.date;
+    }
+    if (updateMedicationRecordDto.notes !== undefined) {
+      updateData.notes = updateMedicationRecordDto.notes;
+    }
+    if (updateMedicationRecordDto.aquariumId !== undefined) {
+      updateData.aquariumId = updateMedicationRecordDto.aquariumId;
+    }
+
     return this.prisma.medicationRecord.update({
       where: { id },
-      data: {
-        name: updateMedicationRecordDto.name,
-        tag: updateMedicationRecordDto.tag,
-        dosage: updateMedicationRecordDto.dosage,
-        date: updateMedicationRecordDto.date,
-        notes: updateMedicationRecordDto.notes,
-        aquariumId: updateMedicationRecordDto.aquariumId,
-      },
+      data: updateData,
     });
   }
 

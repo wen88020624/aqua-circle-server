@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateMedicationRecordDto {
   @ApiProperty({ description: '下藥名稱', example: '魚膚寧' })
-  name!: string;
+  medicationName!: string;
 
   @ApiProperty({ description: 'tag（抗生素、病毒藥）', example: '抗生素' })
   tag!: string;
@@ -22,7 +22,7 @@ export class CreateMedicationRecordDto {
 
 export class UpdateMedicationRecordDto {
   @ApiProperty({ description: '下藥名稱', required: false })
-  name?: string;
+  medicationName?: string;
 
   @ApiProperty({ description: 'tag', required: false })
   tag?: string;

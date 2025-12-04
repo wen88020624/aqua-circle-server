@@ -13,7 +13,7 @@ defineFeature(feature, (test) => {
   let testContext: {
     waterChangeData?: {
       date?: string;
-      waterAmount?: number;
+      waterChangeRatio?: number;
       notes?: string;
       aquariumId?: number;
     };
@@ -61,7 +61,7 @@ defineFeature(feature, (test) => {
 
       testContext.waterChangeData = {
         date: '2025-01-01',
-        waterAmount: 0.5,
+        waterChangeRatio: 0.5,
         aquariumId: aquarium.id,
       };
     });
@@ -137,7 +137,7 @@ defineFeature(feature, (test) => {
 
       testContext.waterChangeData = {
         date: '2025-01-01',
-        waterAmount: 0.5,
+        waterChangeRatio: 0.5,
         aquariumId: aquarium.id,
       };
     });
@@ -176,7 +176,7 @@ defineFeature(feature, (test) => {
 
       testContext.waterChangeData = {
         date: '2025-01-01',
-        waterAmount: undefined as any,
+        waterChangeRatio: undefined as any,
         aquariumId: aquarium.id,
       };
     });
@@ -212,7 +212,7 @@ defineFeature(feature, (test) => {
 
       testContext.waterChangeData = {
         date: '2025-01-01',
-        waterAmount: 0.5,
+        waterChangeRatio: 0.5,
         aquariumId: aquarium.id,
       };
     });

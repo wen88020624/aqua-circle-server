@@ -5,7 +5,7 @@ export class CreateWaterChangeDto {
   date!: string;
 
   @ApiProperty({ description: '換水量（比例：0.5 表示 1/2、0.33 表示 1/3、1.0 表示全換）', example: 0.5 })
-  waterAmount!: number;
+  waterChangeRatio!: number;
 
   @ApiProperty({ description: '備註', required: false, example: '定期換水' })
   notes?: string;
@@ -19,7 +19,7 @@ export class UpdateWaterChangeDto {
   date?: string;
 
   @ApiProperty({ description: '換水量（比例：0.5 表示 1/2、0.33 表示 1/3、1.0 表示全換）', example: 0.5, required: false })
-  waterAmount?: number;
+  waterChangeRatio?: number;
 
   @ApiProperty({ description: '備註', required: false })
   notes?: string;

@@ -13,7 +13,7 @@ export class WaterChangeService {
     }
 
     // 驗證換水量不可為空
-    if (createWaterChangeDto.waterAmount === undefined || createWaterChangeDto.waterAmount === null) {
+    if (createWaterChangeDto.waterChangeRatio === undefined || createWaterChangeDto.waterChangeRatio === null) {
       throw new BadRequestException('換水記錄的換水量不可為空');
     }
 
@@ -34,7 +34,7 @@ export class WaterChangeService {
     return this.prisma.waterChange.create({
       data: {
         date: createWaterChangeDto.date,
-        waterAmount: createWaterChangeDto.waterAmount,
+        waterAmount: createWaterChangeDto.waterChangeRatio,
         notes: createWaterChangeDto.notes,
         aquariumId: createWaterChangeDto.aquariumId,
       },
@@ -76,7 +76,7 @@ export class WaterChangeService {
     }
 
     // 驗證換水量不可為空（如果提供）
-    if (updateWaterChangeDto.waterAmount !== undefined && updateWaterChangeDto.waterAmount === null) {
+    if (updateWaterChangeDto.waterChangeRatio !== undefined && updateWaterChangeDto.waterChangeRatio === null) {
       throw new BadRequestException('換水記錄的換水量不可為空');
     }
 
@@ -84,7 +84,7 @@ export class WaterChangeService {
       where: { id },
       data: {
         date: updateWaterChangeDto.date,
-        waterAmount: updateWaterChangeDto.waterAmount,
+        waterAmount: updateWaterChangeDto.waterChangeRatio,
         notes: updateWaterChangeDto.notes,
         aquariumId: updateWaterChangeDto.aquariumId,
       },

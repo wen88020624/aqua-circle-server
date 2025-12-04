@@ -12,6 +12,16 @@ export class FeedingRecordService {
       throw new BadRequestException('餵食記錄的日期不可為空');
     }
 
+    // 驗證耗材ID不可為空
+    if (!createFeedingRecordDto.consumableId) {
+      throw new BadRequestException('餵食記錄的耗材ID不可為空');
+    }
+
+    // 驗證所屬魚缸ID不可為空
+    if (!createFeedingRecordDto.aquariumId) {
+      throw new BadRequestException('餵食記錄的所屬魚缸不可為空');
+    }
+
     // 驗證所屬魚缸必須存在
     const aquarium = await this.prisma.aquarium.findUnique({
       where: { id: createFeedingRecordDto.aquariumId },
@@ -23,7 +33,7 @@ export class FeedingRecordService {
 
     // 驗證耗材必須存在且 tag 為「飼料」
     const supply = await this.prisma.supply.findUnique({
-      where: { id: createFeedingRecordDto.supplyId },
+      where: { id: createFeedingRecordDto.consumableId },
     });
 
     if (!supply) {
@@ -48,7 +58,7 @@ export class FeedingRecordService {
     const record = await this.prisma.feedingRecord.create({
       data: {
         date: createFeedingRecordDto.date,
-        supplyId: createFeedingRecordDto.supplyId,
+        supplyId: createFeedingRecordDto.consumableId,
         notes: createFeedingRecordDto.notes,
         aquariumId: createFeedingRecordDto.aquariumId,
       },
@@ -111,9 +121,9 @@ export class FeedingRecordService {
     }
 
     // 如果更新耗材ID，驗證耗材是否存在且 tag 為「飼料」
-    if (updateFeedingRecordDto.supplyId) {
+    if (updateFeedingRecordDto.consumableId) {
       const supply = await this.prisma.supply.findUnique({
-        where: { id: updateFeedingRecordDto.supplyId },
+        where: { id: updateFeedingRecordDto.consumableId },
       });
 
       if (!supply) {
@@ -129,7 +139,7 @@ export class FeedingRecordService {
       where: { id },
       data: {
         date: updateFeedingRecordDto.date,
-        supplyId: updateFeedingRecordDto.supplyId,
+        supplyId: updateFeedingRecordDto.consumableId,
         notes: updateFeedingRecordDto.notes,
         aquariumId: updateFeedingRecordDto.aquariumId,
       },

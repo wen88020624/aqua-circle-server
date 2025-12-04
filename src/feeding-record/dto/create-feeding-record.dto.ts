@@ -5,7 +5,7 @@ export class CreateFeedingRecordDto {
   date!: string;
 
   @ApiProperty({ description: '使用的耗材 ID（必須是 tag 為「飼料」的耗材）', example: 1 })
-  supplyId!: number;
+  consumableId!: number;
 
   @ApiProperty({ description: '備註', required: false, example: '早上餵食' })
   notes?: string;
@@ -19,7 +19,7 @@ export class UpdateFeedingRecordDto {
   date?: string;
 
   @ApiProperty({ description: '使用的耗材 ID', required: false })
-  supplyId?: number;
+  consumableId?: number;
 
   @ApiProperty({ description: '備註', required: false })
   notes?: string;
