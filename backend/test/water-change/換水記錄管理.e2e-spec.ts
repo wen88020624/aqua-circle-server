@@ -1,15 +1,16 @@
 import { defineFeature, loadFeature } from 'jest-cucumber';
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { createE2eContext } from '../helpers/e2e-app';
 
 const feature = loadFeature('spec/features/換水記錄管理.feature');
 
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let reset: () => Promise<void>;
+  let close: () => Promise<void>;
   let testContext: {
     waterChangeData?: {
       date?: string;
@@ -23,25 +24,20 @@ defineFeature(feature, (test) => {
   };
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
-    await app.init();
-  });
+    const e2eContext = await createE2eContext();
+    app = e2eContext.app;
+    prisma = e2eContext.prisma;
+    reset = e2eContext.reset;
+    close = e2eContext.close;
+  }, 60000);
 
   beforeEach(async () => {
-    await prisma.waterChange.deleteMany({});
-    await prisma.aquarium.deleteMany({});
+    await reset();
     testContext = {};
   });
 
   afterAll(async () => {
-    await prisma.waterChange.deleteMany({});
-    await prisma.aquarium.deleteMany({});
-    await app.close();
+    await close();
   });
 
   test('新增/更新換水記錄的日期為「2025-01-01」，成功新增', ({ given, when, then }) => {
@@ -101,7 +97,7 @@ defineFeature(feature, (test) => {
 
       testContext.waterChangeData = {
         date: '',
-        waterAmount: 0.5,
+        waterChangeRatio: 0.5,
         aquariumId: aquarium.id,
       };
     });
@@ -239,7 +235,7 @@ defineFeature(feature, (test) => {
     given('使用者輸入換水記錄的所屬魚缸為空', async () => {
       testContext.waterChangeData = {
         date: '2025-01-01',
-        waterAmount: 0.5,
+        waterChangeRatio: 0.5,
         aquariumId: undefined as any,
       };
     });

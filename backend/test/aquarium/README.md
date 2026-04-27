@@ -32,25 +32,13 @@ test/aquarium/
 
 ### 前置需求
 
-1. 確保資料庫服務正在運行：
-   ```bash
-   npm run docker:up
-   ```
-
-2. 執行 Prisma 遷移（如果尚未執行）：
-   ```bash
-   npm run prisma:migrate
-   ```
-
-3. 生成 Prisma Client：
-   ```bash
-   npm run prisma:generate
-   ```
+1. 已安裝並啟動 Docker（E2E 會透過 Testcontainers 自動啟 PostgreSQL）。
+2. 不需要手動先 `docker-compose up` 或先準備本機測試資料庫。
 
 ### 執行 E2E 測試
 
 ```bash
-npm run test:e2e -- test/aquarium/魚缸管理.e2e-spec.ts
+npm run test:e2e:aquarium
 ```
 
 ### 執行所有 E2E 測試
@@ -58,6 +46,31 @@ npm run test:e2e -- test/aquarium/魚缸管理.e2e-spec.ts
 ```bash
 npm run test:e2e
 ```
+
+## Testcontainers 與 Seed 擴充點
+
+- 共用測試資料庫啟停與重置在 `test/helpers/test-db.ts`。
+- 共用 Nest app 建立流程在 `test/helpers/e2e-app.ts`。
+- 若需要在每次測試前預放資料，可在建立 context 時傳入 seed hook：
+
+```ts
+import { createE2eContext } from '../helpers/e2e-app';
+
+const e2e = await createE2eContext(async (prisma) => {
+  await prisma.aquarium.create({
+    data: {
+      name: 'Seed 魚缸',
+      length: 120,
+      width: 50,
+      height: 60,
+      status: '穩定',
+      setupDate: '2025-01-01',
+    },
+  });
+});
+```
+
+- seed hook 會在每次 `reset()` 後被呼叫，方便在不同 feature 測試建立固定初始資料。
 
 ## 測試涵蓋範圍
 

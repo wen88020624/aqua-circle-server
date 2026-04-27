@@ -1,15 +1,16 @@
 import { defineFeature, loadFeature } from 'jest-cucumber';
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { createE2eContext } from '../helpers/e2e-app';
 
 const feature = loadFeature('spec/features/生物管理.feature');
 
 defineFeature(feature, (test) => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let reset: () => Promise<void>;
+  let close: () => Promise<void>;
   let testContext: {
     organismData?: any;
     createdOrganism?: any;
@@ -19,25 +20,20 @@ defineFeature(feature, (test) => {
   };
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
-    await app.init();
-  });
+    const e2eContext = await createE2eContext();
+    app = e2eContext.app;
+    prisma = e2eContext.prisma;
+    reset = e2eContext.reset;
+    close = e2eContext.close;
+  }, 60000);
 
   beforeEach(async () => {
-    await prisma.organism.deleteMany({});
-    await prisma.aquarium.deleteMany({});
+    await reset();
     testContext = {};
   });
 
   afterAll(async () => {
-    await prisma.organism.deleteMany({});
-    await prisma.aquarium.deleteMany({});
-    await app.close();
+    await close();
   });
 
   test('新增/更新生物的名稱為「小丑魚」，成功新增', ({ given, when, then }) => {
