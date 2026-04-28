@@ -7,8 +7,24 @@ export class AquariumService {
   constructor(private prisma: PrismaService) {}
 
   async create(createAquariumDto: CreateAquariumDto) {
+    // 驗證必填欄位
+    if (!createAquariumDto.name || createAquariumDto.name.trim() === '') {
+      throw new BadRequestException('魚缸建立失敗，名稱不能為空');
+    }
+
+    if (!createAquariumDto.setupDate || createAquariumDto.setupDate.trim() === '') {
+      throw new BadRequestException('魚缸建立失敗，開缸日期不能為空');
+    }
+
     // 驗證長度、寬度、高度皆 > 0
-    if (createAquariumDto.length <= 0 || createAquariumDto.width <= 0 || createAquariumDto.height <= 0) {
+    if (
+      createAquariumDto.length === undefined ||
+      createAquariumDto.width === undefined ||
+      createAquariumDto.height === undefined ||
+      createAquariumDto.length <= 0 ||
+      createAquariumDto.width <= 0 ||
+      createAquariumDto.height <= 0
+    ) {
       throw new BadRequestException('魚缸建立失敗，長度、寬度、高度皆須 > 0');
     }
 

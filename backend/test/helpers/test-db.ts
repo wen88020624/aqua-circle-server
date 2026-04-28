@@ -13,6 +13,7 @@ export async function startTestDatabase(): Promise<void> {
   }
 
   postgresContainer = await new PostgreSqlContainer('postgres:16-alpine')
+    .withName('aqua_testcontainers')
     .withDatabase('aquacircle_test')
     .withUsername('postgres')
     .withPassword('postgres')

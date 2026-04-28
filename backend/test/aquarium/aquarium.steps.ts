@@ -1,229 +1,291 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../../src/app.module';
+import { expect } from '@jest/globals';
+import request from 'supertest';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
-describe('魚缸管理 Feature', () => {
-  let app: INestApplication;
-  let prisma: PrismaService;
-  let testContext: {
-    aquariumData?: {
-      name?: string;
-      length?: number;
-      width?: number;
-      height?: number;
-      status?: string;
-      setupDate?: string;
-      notes?: string;
-    };
-    createdAquarium?: any;
-    queryResult?: any[];
-    errorMessage?: string;
-    aquariumId?: number;
+interface AquariumStepDeps {
+  app: INestApplication;
+  prisma: PrismaService;
+}
+
+interface ScenarioContext {
+  createPayload?: Record<string, unknown>;
+  response?: {
+    status: number;
+    body: any;
   };
+  queryResult?: any[];
+  aquariumsByName: Map<string, number>;
+}
 
-  beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+function toRecord(table: any): Record<string, string> {
+  if (Array.isArray(table)) {
+    return table[0] ?? {};
+  }
+  return {};
+}
 
-    app = moduleFixture.createNestApplication();
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
-    await app.init();
+function toRecords(table: any): Array<Record<string, string>> {
+  if (Array.isArray(table)) {
+    return table;
+  }
+  return [];
+}
 
-    // 清理測試資料
-    await prisma.aquarium.deleteMany({});
-  });
+function asNumber(value?: string): number | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  return Number(value);
+}
 
-  beforeEach(() => {
-    testContext = {};
-  });
+function asMaybeString(value?: string): string | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  return value;
+}
 
-  afterAll(async () => {
-    await prisma.aquarium.deleteMany({});
-    await app.close();
-  });
+function assignCreatePayloadFromTable(context: ScenarioContext, table: any): void {
+  const row = toRecord(table);
+  context.createPayload = {
+    name: row.name,
+    length: asNumber(row.length),
+    width: asNumber(row.width),
+    height: asNumber(row.height),
+    status: row.status ?? '',
+    setupDate: row.setupDate,
+    notes: asMaybeString(row.notes),
+  };
+}
 
-  // Given steps
-  describe('Given steps', () => {
-    it('使用者輸入魚缸長度「100」、寬度「50」、高度「60」', () => {
-      testContext.aquariumData = {
-        name: '測試魚缸',
-        length: 100,
-        width: 50,
-        height: 60,
-        status: '開缸',
-        setupDate: '2025-01-01',
-      };
+async function postCreateAquarium(deps: AquariumStepDeps, context: ScenarioContext): Promise<void> {
+  const response = await request(deps.app.getHttpServer()).post('/aquariums').send(context.createPayload);
+  context.response = { status: response.status, body: response.body };
+}
+
+function assertHttpResponse(context: ScenarioContext, table: any): void {
+  const row = toRecord(table);
+  expect(context.response?.status).toBe(Number(row.statusCode));
+  if (row.message !== undefined) {
+    expect(context.response?.body?.message).toBe(row.message);
+  }
+}
+
+export function registerAquariumSteps(
+  test: any,
+  getDeps: () => AquariumStepDeps,
+  getContext: () => ScenarioContext,
+): void {
+  test('魚缸長度、寬度、高度皆 > 0，成功建立', (steps: any) => {
+    const { given, when, then, and } = steps;
+    given('建立魚缸請求資料如下', (table: any) => {
+      assignCreatePayloadFromTable(getContext(), table);
     });
 
-    it('使用者輸入魚缸長度「-100」、寬度「50」、高度「60」', () => {
-      testContext.aquariumData = {
-        name: '測試魚缸',
-        length: -100,
-        width: 50,
-        height: 60,
-        status: '開缸',
-        setupDate: '2025-01-01',
-      };
+    when('使用者建立新的魚缸', async () => {
+      await postCreateAquarium(getDeps(), getContext());
     });
 
-    it('使用者建立魚缸，狀態為「開缸」', () => {
-      testContext.aquariumData = {
-        name: '測試魚缸',
-        length: 100,
-        width: 50,
-        height: 60,
-        status: '開缸',
-        setupDate: '2025-01-01',
-      };
+    then('HTTP 回應應為', (table: any) => {
+      assertHttpResponse(getContext(), table);
     });
 
-    it('使用者建立魚缸，狀態為空', () => {
-      testContext.aquariumData = {
-        name: '測試魚缸',
-        length: 100,
-        width: 50,
-        height: 60,
-        status: '',
-        setupDate: '2025-01-01',
-      };
-    });
-
-    it('魚缸 1 存在於系統中', async () => {
-      const aquarium = await prisma.aquarium.create({
-        data: {
-          name: '魚缸 1',
-          length: 100,
-          width: 50,
-          height: 60,
-          status: '開缸',
-          setupDate: '2025-01-01',
-        },
+    and('資料庫中的魚缸資料應為', async (table: any) => {
+      const row = toRecord(table);
+      const saved = await getDeps().prisma.aquarium.findFirst({
+        where: { name: row.name },
       });
-      testContext.aquariumId = aquarium.id;
+      expect(saved).toBeTruthy();
+      expect(saved?.length).toBe(Number(row.length));
+      expect(saved?.width).toBe(Number(row.width));
+      expect(saved?.height).toBe(Number(row.height));
+      expect(saved?.status).toBe(row.status);
+      expect(saved?.setupDate).toBe(row.setupDate);
+    });
+  });
+
+  test('必填欄位與數值不合法時，建立魚缸失敗', (steps: any) => {
+    const { given, when, then, and } = steps;
+    given('建立魚缸請求資料如下', (table: any) => {
+      assignCreatePayloadFromTable(getContext(), table);
     });
 
-    it('系統中不存在任何魚缸', async () => {
-      await prisma.aquarium.deleteMany({});
+    when('使用者建立新的魚缸', async () => {
+      await postCreateAquarium(getDeps(), getContext());
     });
 
-    it('魚缸 1 存在', async () => {
-      const aquarium = await prisma.aquarium.create({
-        data: {
-          name: '魚缸 1',
-          length: 100,
-          width: 50,
-          height: 60,
-          status: '開缸',
-          setupDate: '2025-01-01',
-        },
+    then('HTTP 回應應為', (table: any) => {
+      assertHttpResponse(getContext(), table);
+    });
+
+    and(/^資料庫中應不存在名稱為「(.+)」的魚缸$/, async (name: string) => {
+      const found = await getDeps().prisma.aquarium.findFirst({
+        where: { name },
       });
-      testContext.aquariumId = aquarium.id;
+      expect(found).toBeNull();
     });
+  });
 
-    it('魚缸 1 有相關的生物、設備或記錄', async () => {
-      // 這個測試中我們不需要實際建立相關資料，因為規格說「不檢查相關聯資料」
-      // 只需要確保魚缸存在即可
-      if (!testContext.aquariumId) {
-        const aquarium = await prisma.aquarium.create({
+  test('魚缸存在，查詢所有魚缸成功', (steps: any) => {
+    const { given, when, then, and } = steps;
+    given('系統初始魚缸資料如下', async (table: any) => {
+      const rows = toRecords(table);
+      for (const row of rows) {
+        const aquarium = await getDeps().prisma.aquarium.create({
           data: {
-            name: '魚缸 1',
-            length: 100,
-            width: 50,
-            height: 60,
-            status: '開缸',
-            setupDate: '2025-01-01',
+            name: row.name,
+            length: Number(row.length),
+            width: Number(row.width),
+            height: Number(row.height),
+            status: row.status,
+            setupDate: row.setupDate,
+            notes: asMaybeString(row.notes),
           },
         });
-        testContext.aquariumId = aquarium.id;
+        getContext().aquariumsByName.set(aquarium.name, aquarium.id);
       }
+    });
+
+    when('使用者查詢所有魚缸', async () => {
+      const response = await request(getDeps().app.getHttpServer()).get('/aquariums');
+      getContext().response = { status: response.status, body: response.body };
+      getContext().queryResult = response.body;
+    });
+
+    then('HTTP 回應應為', (table: any) => {
+      assertHttpResponse(getContext(), table);
+    });
+
+    and('查詢結果應包含魚缸', (table: any) => {
+      const row = toRecord(table);
+      const found = getContext().queryResult?.find((item) => item.name === row.name);
+      expect(found).toBeTruthy();
+      expect(found?.length).toBe(Number(row.length));
+      expect(found?.width).toBe(Number(row.width));
+      expect(found?.height).toBe(Number(row.height));
+      expect(found?.status).toBe(row.status);
     });
   });
 
-  // When steps
-  describe('When steps', () => {
-    it('使用者建立新的魚缸', async () => {
-      if (testContext.aquariumData) {
-        try {
-          const response = await request(app.getHttpServer())
-            .post('/aquariums')
-            .send(testContext.aquariumData)
-            .expect((res) => {
-              if (res.status >= 400) {
-                testContext.errorMessage = res.body.message;
-              }
-            });
+  test('不存在任何魚缸，查詢所有魚缸結果為空', (steps: any) => {
+    const { given, when, then, and } = steps;
+    given('系統中不存在任何魚缸', async () => {
+      await getDeps().prisma.aquarium.deleteMany();
+    });
 
-          if (response.status === 201) {
-            testContext.createdAquarium = response.body;
-          }
-        } catch (error: any) {
-          if (error.response) {
-            testContext.errorMessage = error.response.body.message;
-          }
+    when('使用者查詢所有魚缸', async () => {
+      const response = await request(getDeps().app.getHttpServer()).get('/aquariums');
+      getContext().response = { status: response.status, body: response.body };
+      getContext().queryResult = response.body;
+    });
+
+    then('HTTP 回應應為', (table: any) => {
+      assertHttpResponse(getContext(), table);
+    });
+
+    and('查詢結果應為空陣列', () => {
+      expect(Array.isArray(getContext().queryResult)).toBe(true);
+      expect(getContext().queryResult).toHaveLength(0);
+    });
+  });
+
+  test('刪除魚缸但保留相關資料', (steps: any) => {
+    const { given, and, when, then } = steps;
+    given('系統初始魚缸資料如下', async (table: any) => {
+      const row = toRecord(table);
+      const aquarium = await getDeps().prisma.aquarium.create({
+        data: {
+          name: row.name,
+          length: Number(row.length),
+          width: Number(row.width),
+          height: Number(row.height),
+          status: row.status,
+          setupDate: row.setupDate,
+          notes: asMaybeString(row.notes),
+        },
+      });
+      getContext().aquariumsByName.set(aquarium.name, aquarium.id);
+    });
+
+    and('魚缸「魚缸 1」有以下關聯資料', async (table: any) => {
+      const aquariumId = getContext().aquariumsByName.get('魚缸 1');
+      expect(aquariumId).toBeDefined();
+      const rows = toRecords(table);
+      for (const row of rows) {
+        if (row.relationType === 'organism') {
+          await getDeps().prisma.organism.create({
+            data: {
+              name: row.name,
+              tag: row.tag,
+              aquariumId: aquariumId!,
+            },
+          });
+        }
+        if (row.relationType === 'equipment') {
+          await getDeps().prisma.equipment.create({
+            data: {
+              name: row.name,
+              tag: row.tag,
+              status: '使用中',
+              aquariumId,
+            },
+          });
+        }
+        if (row.relationType === 'waterChange') {
+          await getDeps().prisma.waterChange.create({
+            data: {
+              date: row.date,
+              waterAmount: 0.5,
+              aquariumId: aquariumId!,
+            },
+          });
         }
       }
     });
 
-    it('使用者查詢所有魚缸', async () => {
-      const response = await request(app.getHttpServer()).get('/aquariums');
-      testContext.queryResult = response.body;
+    when('使用者刪除名稱為「魚缸 1」的魚缸', async () => {
+      const aquariumId = getContext().aquariumsByName.get('魚缸 1');
+      expect(aquariumId).toBeDefined();
+      const response = await request(getDeps().app.getHttpServer()).delete(`/aquariums/${aquariumId}`);
+      getContext().response = { status: response.status, body: response.body };
     });
 
-    it('使用者刪除魚缸 1', async () => {
-      if (testContext.aquariumId) {
-        await request(app.getHttpServer())
-          .delete(`/aquariums/${testContext.aquariumId}`)
-          .expect(200);
+    then('HTTP 回應應為', (table: any) => {
+      assertHttpResponse(getContext(), table);
+    });
+
+    and('資料庫中應不存在名稱為「魚缸 1」的魚缸', async () => {
+      const deleted = await getDeps().prisma.aquarium.findFirst({
+        where: { name: '魚缸 1' },
+      });
+      expect(deleted).toBeNull();
+    });
+
+    and('關聯資料應保留如下', async (table: any) => {
+      const rows = toRecords(table);
+      for (const row of rows) {
+        const expectedCount = Number(row.expectedCount);
+        if (row.relationType === 'organism') {
+          const count = await getDeps().prisma.organism.count({
+            where: { name: '小丑魚' },
+          });
+          expect(count).toBe(expectedCount);
+        }
+        if (row.relationType === 'equipment') {
+          const count = await getDeps().prisma.equipment.count({
+            where: { name: '圓筒過濾器' },
+          });
+          expect(count).toBe(expectedCount);
+        }
+        if (row.relationType === 'waterChange') {
+          const count = await getDeps().prisma.waterChange.count({
+            where: { date: '2025-01-02' },
+          });
+          expect(count).toBe(expectedCount);
+        }
       }
     });
   });
-
-  // Then steps
-  describe('Then steps', () => {
-    it('魚缸被成功建立', () => {
-      expect(testContext.createdAquarium).toBeDefined();
-      expect(testContext.createdAquarium.id).toBeDefined();
-    });
-
-    it('魚缸被建立失敗，系統提示「魚缸建立失敗，長度、寬度、高度皆須 > 0」', () => {
-      expect(testContext.errorMessage).toBe('魚缸建立失敗，長度、寬度、高度皆須 > 0');
-    });
-
-    it('魚缸被建立失敗，系統提示「魚缸建立失敗，狀態不能為空」', () => {
-      expect(testContext.errorMessage).toBe('魚缸建立失敗，狀態不能為空');
-    });
-
-    it('查詢結果應有魚缸 1', () => {
-      expect(testContext.queryResult).toBeDefined();
-      expect(Array.isArray(testContext.queryResult)).toBe(true);
-      expect(testContext.queryResult.length).toBeGreaterThan(0);
-      const found = testContext.queryResult.find((aq: any) => aq.name === '魚缸 1');
-      expect(found).toBeDefined();
-    });
-
-    it('查詢結果應為空', () => {
-      expect(testContext.queryResult).toBeDefined();
-      expect(Array.isArray(testContext.queryResult)).toBe(true);
-      expect(testContext.queryResult.length).toBe(0);
-    });
-
-    it('魚缸 1 被刪除', async () => {
-      if (testContext.aquariumId) {
-        const aquarium = await prisma.aquarium.findUnique({
-          where: { id: testContext.aquariumId },
-        });
-        expect(aquarium).toBeNull();
-      }
-    });
-
-    it('相關的生物、設備和記錄仍然保留', () => {
-      // 這個測試中我們不需要實際驗證，因為規格說「不檢查相關聯資料」
-      // 只需要確保刪除操作成功即可
-      expect(testContext.aquariumId).toBeDefined();
-    });
-  });
-});
+}
 

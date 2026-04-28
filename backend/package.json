@@ -19,6 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "test:e2e:aquarium": "jest --config ./test/jest-e2e.json --runInBand test/aquarium/魚缸管理.e2e-spec.ts",
+    "test:bdd:e2e": "cucumber-js --config cucumber.js",
+    "test:bdd:e2e:aquarium": "cucumber-js --config cucumber.js -p aquarium",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
@@ -38,6 +40,7 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^12.8.2",
     "@nestjs/cli": "^10.4.9",
     "@nestjs/schematics": "^10.1.8",
     "@nestjs/testing": "^10.4.20",
