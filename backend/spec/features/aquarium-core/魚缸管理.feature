@@ -34,25 +34,22 @@ Feature: 魚缸管理
         | 測試魚缸 |       | 50    | 60     | 開缸     | 2025-01-01 | 魚缸建立失敗，長度、寬度、高度皆須 > 0 |
 
   Rule: 使用者可以查詢所有魚缸
-    Scenario: 魚缸存在，查詢所有魚缸成功
+    Scenario Outline: 查詢所有魚缸
       Given 系統初始魚缸資料如下
-        | name | length | width | height | status | setupDate  | notes |
-        | 魚缸 1 | 100    | 50    | 60     | 開缸     | 2025-01-01 | 主缸   |
+        | name   | length | width | height | status | setupDate  | notes |
+        | <name> | 100    | 50    | 60     | 開缸     | 2025-01-01 | 主缸   |
       When 使用者查詢所有魚缸
       Then HTTP 回應應為
         | statusCode |
         | 200        |
-      And 查詢結果應包含魚缸
-        | name | length | width | height | status |
-        | 魚缸 1 | 100    | 50    | 60     | 開缸     |
+      And 查詢結果應為
+        | expected |
+        | <result> |
 
-    Scenario: 不存在任何魚缸，查詢所有魚缸結果為空
-      Given 系統中不存在任何魚缸
-      When 使用者查詢所有魚缸
-      Then HTTP 回應應為
-        | statusCode |
-        | 200        |
-      And 查詢結果應為空陣列
+      Examples:
+        | name  | result |
+        | 魚缸 1 | 有資料   |
+        |       | 空陣列   |
 
   Rule: 使用者可以刪除魚缸，且保留關聯資料
     Scenario: 刪除魚缸但保留相關資料

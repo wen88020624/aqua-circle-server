@@ -7,6 +7,11 @@ let isMigrated = false;
 
 export type SeedHook = (prisma: PrismaService) => Promise<void>;
 
+function shouldKeepTestDatabase(): boolean {
+  const value = process.env.E2E_KEEP_DB?.trim().toLowerCase();
+  return value === '1' || value === 'true' || value === 'yes';
+}
+
 export async function startTestDatabase(): Promise<void> {
   if (postgresContainer) {
     return;
@@ -20,6 +25,7 @@ export async function startTestDatabase(): Promise<void> {
     .start();
 
   process.env.DATABASE_URL = postgresContainer.getConnectionUri();
+  console.log(`[Testcontainers] PostgreSQL connection URI: ${process.env.DATABASE_URL}`);
 
   if (!isMigrated) {
     execSync('npx prisma migrate deploy', {
@@ -36,6 +42,11 @@ export async function startTestDatabase(): Promise<void> {
 
 export async function stopTestDatabase(): Promise<void> {
   if (!postgresContainer) {
+    return;
+  }
+
+  if (shouldKeepTestDatabase()) {
+    console.log('[Testcontainers] E2E_KEEP_DB=true, skip stopping test database container.');
     return;
   }
 

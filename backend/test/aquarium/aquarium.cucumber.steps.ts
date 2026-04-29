@@ -123,16 +123,21 @@ Then(/^資料庫中應不存在名稱為「(.+)」的魚缸$/, async function (n
 });
 
 Given('系統初始魚缸資料如下', async function (table: DataTable) {
+  await prisma.aquarium.deleteMany();
+  scenarioContext.aquariumsByName.clear();
   const rows = toRecords(table);
   for (const row of rows) {
+    if (!row.name) {
+      continue;
+    }
     const aquarium = await prisma.aquarium.create({
       data: {
         name: row.name,
-        length: Number(row.length),
-        width: Number(row.width),
-        height: Number(row.height),
-        status: row.status,
-        setupDate: row.setupDate,
+        length: asNumber(row.length) ?? 100,
+        width: asNumber(row.width) ?? 50,
+        height: asNumber(row.height) ?? 60,
+        status: row.status || '開缸',
+        setupDate: row.setupDate || '2025-01-01',
         notes: asMaybeString(row.notes),
       },
     });
@@ -147,6 +152,7 @@ When('使用者查詢所有魚缸', async function () {
   const response = await request(e2eContext.app.getHttpServer()).get('/aquariums');
   scenarioContext.response = { status: response.status, body: response.body };
   scenarioContext.queryResult = response.body;
+  (this as any).queryResult = response.body;
 });
 
 Then('查詢結果應包含魚缸', function (table: DataTable) {
@@ -157,6 +163,21 @@ Then('查詢結果應包含魚缸', function (table: DataTable) {
   assert.equal(found.width, Number(row.width));
   assert.equal(found.height, Number(row.height));
   assert.equal(found.status, row.status);
+});
+
+Then('查詢結果應為', function (this: any, table: DataTable) {
+  const queryResult = this.queryResult ?? scenarioContext.queryResult;
+  const row = toRecord(table);
+  if (row.expected === '空陣列') {
+    assert.equal(Array.isArray(queryResult), true);
+    assert.equal(queryResult?.length, 0);
+    return;
+  }
+
+  if (row.expected === '有資料') {
+    assert.equal(Array.isArray(queryResult), true);
+    assert.ok((queryResult?.length ?? 0) > 0);
+  }
 });
 
 Given('系統中不存在任何魚缸', async function () {

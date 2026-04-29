@@ -2,7 +2,7 @@
 
 ## 概述
 
-本目錄包含使用 TDD（Test-Driven Development）方式實作的魚缸管理功能，基於 `spec/features/魚缸管理.feature` 規格檔案。
+本目錄包含使用 TDD（Test-Driven Development）方式實作的魚缸管理功能，基於 `spec/features/aquarium-core/魚缸管理.feature` 規格檔案。
 
 ## 檔案結構
 
@@ -15,7 +15,7 @@ test/aquarium/
 
 ## 實作的功能
 
-根據 `spec/features/魚缸管理.feature` 實作以下功能：
+根據 `spec/features/aquarium-core/魚缸管理.feature` 實作以下功能：
 
 1. **建立魚缸** - POST `/aquariums`
    - 驗證長度、寬度、高度皆 > 0
@@ -35,16 +35,16 @@ test/aquarium/
 1. 已安裝並啟動 Docker（E2E 會透過 Testcontainers 自動啟 PostgreSQL）。
 2. 不需要手動先 `docker-compose up` 或先準備本機測試資料庫。
 
-### 執行 E2E 測試
-
-```bash
-npm run test:e2e:aquarium
-```
-
-### 執行所有 E2E 測試
+### 執行 E2E 測試（全量）
 
 ```bash
 npm run test:e2e
+```
+
+### 執行 BDD E2E 測試（全量）
+
+```bash
+npm run test:bdd:e2e
 ```
 
 ## Testcontainers 與 Seed 擴充點

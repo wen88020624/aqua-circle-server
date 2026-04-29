@@ -7,8 +7,8 @@ export class SupplyService {
   constructor(private prisma: PrismaService) {}
 
   async create(createSupplyDto: CreateSupplyDto) {
-    // 驗證數量必須 > 0
-    if (createSupplyDto.quantity <= 0) {
+    // 驗證數量必須 >?（此專案需求：-1 應失敗，但 0 允許並自動變更狀態）
+    if (createSupplyDto.quantity < 0) {
       throw new BadRequestException('耗材的數量必須 > 0');
     }
 
@@ -85,13 +85,16 @@ export class SupplyService {
     }
 
     // 根據數量自動更新狀態
-    let status = existing.status;
+    // 規則：只要 DTO 提供了 quantity，就以 quantity 自動計算的狀態為準
+    let nextStatus = existing.status;
     if (updateSupplyDto.quantity !== undefined) {
       if (updateSupplyDto.quantity === 0) {
-        status = '用完';
+        nextStatus = '用完';
       } else if (updateSupplyDto.quantity > 0 && existing.status === '用完') {
-        status = '使用中';
+        nextStatus = '使用中';
       }
+    } else if (updateSupplyDto.status !== undefined) {
+      nextStatus = updateSupplyDto.status;
     }
 
     // 如果更新魚缸ID，驗證魚缸是否存在
@@ -111,7 +114,7 @@ export class SupplyService {
         name: updateSupplyDto.name,
         tag: updateSupplyDto.tag,
         quantity: updateSupplyDto.quantity,
-        status: updateSupplyDto.status || status,
+        status: nextStatus,
         price: updateSupplyDto.price,
         notes: updateSupplyDto.notes,
         purchaseDate: updateSupplyDto.purchaseDate,
