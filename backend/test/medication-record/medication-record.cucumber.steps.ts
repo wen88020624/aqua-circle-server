@@ -77,7 +77,7 @@ Given('下藥記錄請求資料如下', async function (table: DataTable) {
   };
 });
 
-When('使用者新增\\/更新下藥記錄', async function () {
+When(/^使用者新增\/更新下藥記錄$/, async function () {
   assert.ok(e2eContext);
   const payload = scenarioContext.payload!;
 
