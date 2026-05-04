@@ -34,7 +34,7 @@ export async function createE2eContext(seedHook: SeedHook = noOpSeed): Promise<E
     reset,
     close: async () => {
       await app.close();
-      // await stopTestDatabase();
+      await stopTestDatabase();
     },
   };
 }
