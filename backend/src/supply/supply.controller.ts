@@ -1,44 +1,67 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { Api } from '../decorators/api.decorator';
 import { SupplyService } from './supply.service';
 import { CreateSupplyDto, UpdateSupplyDto } from './dto/create-supply.dto';
+import { SupplyEntity } from '../common/entities/supply.entity';
 
-@ApiTags('耗材管理')
-@Controller('supplies')
+@Api({ path: 'supplies', tag: '耗材管理' })
 export class SupplyController {
   constructor(private readonly supplyService: SupplyService) {}
 
   @Post()
-  @ApiOperation({ summary: '新增耗材' })
-  @ApiResponse({ status: 201, description: '耗材新增成功' })
-  @ApiResponse({ status: 400, description: '輸入驗證失敗' })
+  @ApiCreatedResponse({
+    description: '新增耗材成功',
+    type: SupplyEntity,
+  })
+  @ApiBadRequestResponse({
+    description: '輸入驗證失敗或所屬魚缸不存在',
+  })
   create(@Body() createSupplyDto: CreateSupplyDto) {
     return this.supplyService.create(createSupplyDto);
   }
 
   @Get()
-  @ApiOperation({ summary: '查詢所有耗材' })
-  @ApiResponse({ status: 200, description: '成功取得耗材列表' })
+  @ApiOkResponse({
+    description: '取得所有耗材列表',
+    type: [SupplyEntity],
+  })
   findAll() {
     return this.supplyService.findAll();
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: '更新耗材' })
-  @ApiParam({ name: 'id', description: '耗材 ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '耗材更新成功' })
-  @ApiResponse({ status: 404, description: '耗材不存在' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateSupplyDto: UpdateSupplyDto) {
+  @ApiOkResponse({
+    description: '更新耗材成功',
+    type: SupplyEntity,
+  })
+  @ApiBadRequestResponse({
+    description: '參數不符合要求或所屬魚缸不存在',
+  })
+  @ApiNotFoundResponse({
+    description: '耗材不存在',
+  })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateSupplyDto: UpdateSupplyDto,
+  ) {
     return this.supplyService.update(id, updateSupplyDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '刪除耗材' })
-  @ApiParam({ name: 'id', description: '耗材 ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '耗材刪除成功' })
-  @ApiResponse({ status: 404, description: '耗材不存在' })
+  @ApiOkResponse({
+    description: '刪除耗材成功',
+    type: SupplyEntity,
+  })
+  @ApiNotFoundResponse({
+    description: '耗材不存在',
+  })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.supplyService.remove(id);
   }
 }
-

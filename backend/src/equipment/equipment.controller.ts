@@ -1,44 +1,67 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { Api } from '../decorators/api.decorator';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto, UpdateEquipmentDto } from './dto/create-equipment.dto';
+import { EquipmentEntity } from './entities/equipment.entity';
 
-@ApiTags('設備管理')
-@Controller('equipments')
+@Api({ path: 'equipments', tag: '設備管理' })
 export class EquipmentController {
   constructor(private readonly equipmentService: EquipmentService) {}
 
   @Post()
-  @ApiOperation({ summary: '新增設備' })
-  @ApiResponse({ status: 201, description: '設備新增成功' })
-  @ApiResponse({ status: 400, description: '輸入驗證失敗' })
+  @ApiCreatedResponse({
+    description: '新增設備成功',
+    type: EquipmentEntity,
+  })
+  @ApiBadRequestResponse({
+    description: '輸入驗證失敗或所屬魚缸不存在',
+  })
   create(@Body() createEquipmentDto: CreateEquipmentDto) {
     return this.equipmentService.create(createEquipmentDto);
   }
 
   @Get()
-  @ApiOperation({ summary: '查詢所有設備' })
-  @ApiResponse({ status: 200, description: '成功取得設備列表' })
+  @ApiOkResponse({
+    description: '取得所有設備列表',
+    type: [EquipmentEntity],
+  })
   findAll() {
     return this.equipmentService.findAll();
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: '更新設備' })
-  @ApiParam({ name: 'id', description: '設備 ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '設備更新成功' })
-  @ApiResponse({ status: 404, description: '設備不存在' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateEquipmentDto: UpdateEquipmentDto) {
+  @ApiOkResponse({
+    description: '更新設備成功',
+    type: EquipmentEntity,
+  })
+  @ApiBadRequestResponse({
+    description: '參數不符合要求或所屬魚缸不存在',
+  })
+  @ApiNotFoundResponse({
+    description: '設備不存在',
+  })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateEquipmentDto: UpdateEquipmentDto,
+  ) {
     return this.equipmentService.update(id, updateEquipmentDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '刪除設備' })
-  @ApiParam({ name: 'id', description: '設備 ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '設備刪除成功' })
-  @ApiResponse({ status: 404, description: '設備不存在' })
+  @ApiOkResponse({
+    description: '刪除設備成功',
+    type: EquipmentEntity,
+  })
+  @ApiNotFoundResponse({
+    description: '設備不存在',
+  })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.equipmentService.remove(id);
   }
 }
-
