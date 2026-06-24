@@ -1,44 +1,75 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { Api } from '../decorators/api.decorator';
 import { WaterQualityRecordService } from './water-quality-record.service';
-import { CreateWaterQualityRecordDto, UpdateWaterQualityRecordDto } from './dto/create-water-quality-record.dto';
+import {
+  CreateWaterQualityRecordDto,
+  UpdateWaterQualityRecordDto,
+} from './dto/create-water-quality-record.dto';
+import { WaterQualityRecordEntity } from './entities/water-quality-record.entity';
 
-@ApiTags('水質檢測記錄管理')
-@Controller('water-quality-records')
+@Api({ path: 'water-quality-records', tag: '水質檢測記錄管理' })
 export class WaterQualityRecordController {
-  constructor(private readonly waterQualityRecordService: WaterQualityRecordService) {}
+  constructor(
+    private readonly waterQualityRecordService: WaterQualityRecordService,
+  ) {}
 
   @Post()
-  @ApiOperation({ summary: '新增水質檢測記錄' })
-  @ApiResponse({ status: 201, description: '水質檢測記錄新增成功' })
-  @ApiResponse({ status: 400, description: '輸入驗證失敗' })
+  @ApiCreatedResponse({
+    description: '新增水質檢測記錄成功',
+    type: WaterQualityRecordEntity,
+  })
+  @ApiBadRequestResponse({
+    description: '輸入驗證失敗或所屬魚缸不存在',
+  })
   create(@Body() createWaterQualityRecordDto: CreateWaterQualityRecordDto) {
     return this.waterQualityRecordService.create(createWaterQualityRecordDto);
   }
 
   @Get()
-  @ApiOperation({ summary: '查詢所有水質檢測記錄' })
-  @ApiResponse({ status: 200, description: '成功取得水質檢測記錄列表' })
+  @ApiOkResponse({
+    description: '取得所有水質檢測記錄列表',
+    type: [WaterQualityRecordEntity],
+  })
   findAll() {
     return this.waterQualityRecordService.findAll();
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: '更新水質檢測記錄' })
-  @ApiParam({ name: 'id', description: '水質檢測記錄 ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '水質檢測記錄更新成功' })
-  @ApiResponse({ status: 404, description: '水質檢測記錄不存在' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateWaterQualityRecordDto: UpdateWaterQualityRecordDto) {
-    return this.waterQualityRecordService.update(id, updateWaterQualityRecordDto);
+  @ApiOkResponse({
+    description: '更新水質檢測記錄成功',
+    type: WaterQualityRecordEntity,
+  })
+  @ApiBadRequestResponse({
+    description: '參數不符合要求或所屬魚缸不存在',
+  })
+  @ApiNotFoundResponse({
+    description: '水質檢測記錄不存在',
+  })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateWaterQualityRecordDto: UpdateWaterQualityRecordDto,
+  ) {
+    return this.waterQualityRecordService.update(
+      id,
+      updateWaterQualityRecordDto,
+    );
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '刪除水質檢測記錄' })
-  @ApiParam({ name: 'id', description: '水質檢測記錄 ID', type: 'number' })
-  @ApiResponse({ status: 200, description: '水質檢測記錄刪除成功' })
-  @ApiResponse({ status: 404, description: '水質檢測記錄不存在' })
+  @ApiOkResponse({
+    description: '刪除水質檢測記錄成功',
+    type: WaterQualityRecordEntity,
+  })
+  @ApiNotFoundResponse({
+    description: '水質檢測記錄不存在',
+  })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.waterQualityRecordService.remove(id);
   }
 }
-
